@@ -484,6 +484,22 @@
         padding: 18px 6vw 18px 6vw;
       }
     }
+
+    /* Avis */
+    #stars {
+      display: flex;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .star {
+      font-size: 1.5rem;
+      color: #e0e7ef; /* light/empty by default */
+      transition: transform 0.2s;
+    }
+    .star.selected {
+      color: #ffd700; /* gold for selected */
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -502,6 +518,7 @@
       <a href="#" onclick="showSection('virements')">💸 Virements</a>
       <a href="#" onclick="showSection('releves')">📄 Relevés</a>
       <a href="#" onclick="showSection('parametres')">⚙️ Paramètres</a>
+      <a href="#" onclick="showSection('avis')">⭐ Avis</a>
       <a href="#" onclick="showSection('deconnexion')">🚪 Déconnexion</a>
     </nav>
   </div>
@@ -619,6 +636,26 @@
     </section>
     <section id="deconnexionSection" class="main-section" style="display:none">
       <div class="card"><h2>Déconnexion</h2><p>Merci de votre visite. À bientôt !</p></div>
+    </section>
+    <section id="avisSection" class="main-section" style="display:none">
+      <div class="card">
+        <h2>Laissez votre avis</h2>
+        <form id="feedbackForm">
+          <div style="margin-bottom:12px;">
+            <label>Note :</label>
+            <span id="stars">
+              <span class="star selected" data-value="1">&#9733;</span>
+              <span class="star" data-value="2">&#9733;</span>
+              <span class="star" data-value="3">&#9733;</span>
+              <span class="star" data-value="4">&#9733;</span>
+              <span class="star" data-value="5">&#9733;</span>
+            </span>
+          </div>
+          <textarea id="feedbackText" rows="4" style="width:100%;" placeholder="Votre avis..."></textarea>
+          <button type="submit" style="margin-top:10px;">Envoyer</button>
+        </form>
+        <div id="feedbackResult" style="margin-top:12px;"></div>
+      </div>
     </section>
   </div>
 
@@ -762,7 +799,7 @@
 
     // Navigation sidebar
     function showSection(section) {
-      const sections = ['accueil','transactions','virements','releves','parametres','deconnexion'];
+      const sections = ['accueil','transactions','virements','releves','parametres','deconnexion','avis'];
       sections.forEach(s => {
         document.getElementById(s+'Section').style.display = (s === section) ? '' : 'none';
       });
@@ -809,6 +846,51 @@
         resultDiv.style.color = '#e53935';
         resultDiv.textContent = '❌ Erreur serveur.';
       }
+    });
+
+    // Avis
+    document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const stars = Array.from(document.querySelectorAll('.star'));
+      // FIX: count selected stars for rating
+      const rating = stars.filter(s => s.classList.contains('selected')).length;
+      const comment = document.getElementById('feedbackText').value.trim();
+      const resultDiv = document.getElementById('feedbackResult');
+      resultDiv.textContent = 'Envoi de votre avis...';
+      try {
+        const res = await fetch('/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rating, comment })
+        });
+        const data = await res.json();
+        if (data.success) {
+          resultDiv.style.color = '#22c55e';
+          resultDiv.innerHTML = '✅ Merci pour votre avis !';
+          // Réinitialiser le formulaire
+          document.getElementById('feedbackForm').reset();
+          stars.forEach(s => s.classList.remove('selected'));
+          // Remettre la première étoile sélectionnée par défaut
+          if (stars.length) stars[0].classList.add('selected');
+        } else {
+          resultDiv.style.color = '#e53935';
+          resultDiv.textContent = '❌ ' + (data.error || 'Erreur lors de l\'envoi de votre avis.');
+        }
+      } catch (err) {
+        resultDiv.style.color = '#e53935';
+        resultDiv.textContent = '❌ Erreur serveur.';
+      }
+    });
+    document.querySelectorAll('.star').forEach(star => {
+      star.addEventListener('click', function() {
+        const value = parseInt(this.getAttribute('data-value'));
+        // Update stars: only those <= value are selected
+        document.querySelectorAll('.star').forEach(s => {
+          s.classList.toggle('selected', parseInt(s.getAttribute('data-value')) <= value);
+        });
+        // Optional: remove this line if you don't want to auto-fill the textarea
+        // document.getElementById('feedbackText').value = `Note: ${value} étoiles`;
+      });
     });
   </script>
 </body>

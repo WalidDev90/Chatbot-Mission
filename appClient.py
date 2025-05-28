@@ -16,6 +16,7 @@ import re
 from datetime import datetime
 import io
 import contextlib
+import csv
 
 # Configure Gemini (via Google Generative AI)
 genai.configure(api_key="AIzaSyAjIBfty23aEyZ7rLfxa171JrejzLL1uGc")  # Remplace par ta clé API Google
@@ -296,6 +297,31 @@ def transfer():
     df3.at[from_idx, 'yearly_income'] -= amount
     df3.at[to_idx, 'yearly_income'] += amount
     return jsonify({'success': True, 'new_balance': round(df3.at[from_idx, 'yearly_income'], 2)})
+
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    data = request.get_json()
+    rating = data.get('rating')
+    comment = data.get('comment', '').strip()
+    user = session.get('client_id', 'anonyme')  # Or use user name/email if available
+
+    if not rating or not comment:
+        return jsonify({'success': False, 'error': 'Merci de donner une note et un avis.'})
+
+    feedback_file = 'feedback.csv'
+    feedback_path = os.path.join(os.path.dirname(__file__), feedback_file)
+    file_exists = os.path.isfile(feedback_path)
+
+    try:
+        with open(feedback_path, 'a', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            if not file_exists:
+                writer.writerow(['timestamp', 'user', 'rating', 'comment'])
+            writer.writerow([datetime.now().isoformat(), user, rating, comment])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
