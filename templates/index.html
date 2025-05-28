@@ -872,6 +872,10 @@
           stars.forEach(s => s.classList.remove('selected'));
           // Remettre la première étoile sélectionnée par défaut
           if (stars.length) stars[0].classList.add('selected');
+          // Hide the message after 1 second
+          setTimeout(() => {
+            resultDiv.innerHTML = '';
+          }, 1000);
         } else {
           resultDiv.style.color = '#e53935';
           resultDiv.textContent = '❌ ' + (data.error || 'Erreur lors de l\'envoi de votre avis.');
