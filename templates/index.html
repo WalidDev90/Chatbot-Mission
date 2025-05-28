@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>BankBot Chat</title>
+  <style>
+    /* Reset rapide */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(120deg, #e0e7ef 0%, #f7fafc 100%);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(160deg, #2563eb 60%, #1e293b 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 28px 18px 18px 18px;
+      box-shadow: 2px 0 16px 0 rgba(30,41,59,0.08);
+      z-index: 10;
+    }
+    .sidebar .profile {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .sidebar .profile img {
+      width: 74px; height: 74px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    }
+    .sidebar .profile h3 {
+      margin-bottom: 4px;
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .sidebar .profile .balance {
+      font-weight: bold;
+      font-size: 16px;
+      color: #c7e0ff;
+      margin-top: 2px;
+    }
+    .sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 16px;
+      color: #e0e7ef;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background .25s, color .25s;
+    }
+    .sidebar nav a:hover {
+      background: #3b82f6;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(59,130,246,0.10);
+    }
+
+    /* CONTENU PRINCIPAL */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 38px 40px 20px 40px;
+      min-width: 0;
+      position: relative;
+    }
+    .main header {
+      margin-bottom: 28px;
+      background: #fff;
+      padding: 26px 30px 18px 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(30,41,59,0.07);
+    }
+    .main header h1 {
+      font-size: 26px;
+      margin-bottom: 7px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .main header p {
+      color: #64748b;
+      font-size: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 26px 28px 22px 28px;
+      box-shadow: 0 2px 12px rgba(30,41,59,0.07);
+      margin-bottom: 32px;
+    }
+
+    /* Chart container */
+    .chart-container {
+      position: relative;
+      height: 520px;
+      min-width: 350px;
+      margin-bottom: 18px;
+    }
+
+    /* Tableau */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-bottom: 22px;
+      align-items: center;
+    }
+    .filters label {
+      font-weight: 600;
+      margin-right: 7px;
+      color: #1e293b;
+    }
+    .filters input,
+    .filters select {
+      padding: 7px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      font-size: 15px;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+    .filters button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      transition: background .2s;
+      box-shadow: 0 1px 4px rgba(37,99,235,0.08);
+    }
+    .filters button:hover {
+      background: #1d4ed8;
+    }
+
+    .styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(30,41,59,0.06);
+    }
+    .styled-table th, .styled-table td {
+      padding: 13px 18px;
+      text-align: left;
+      font-size: 15px;
+    }
+    .styled-table thead {
+      background: #f1f5f9;
+    }
+    .styled-table thead th {
+      color: #2563eb;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .styled-table tbody tr:nth-child(odd) {
+      background: #f8fafc;
+    }
+    .styled-table tbody tr:hover {
+      background: #e0e7ef;
+      transition: background .2s;
+    }
+
+    /* CHAT FLOTTANT */
+    .chat-icon {
+      position: fixed;
+      bottom: 28px;
+      right: 32px;
+      background: linear-gradient(120deg, #2563eb 60%, #38bdf8 100%);
+      color: #fff;
+      width: 62px; height: 62px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.18);
+      z-index: 1000;
+      transition: background .2s, box-shadow .2s;
+    }
+    .chat-icon:hover {
+      background: linear-gradient(120deg, #1d4ed8 60%, #0ea5e9 100%);
+      box-shadow: 0 6px 24px rgba(37,99,235,0.22);
+    }
+    .chat-container {
+      position: fixed;
+      bottom: 100px;
+      right: 32px;
+      width: 500px;
+      min-width: 340px;
+      max-width: 98vw;
+      max-height: 700px;
+      height: 540px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(30,41,59,0.22);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 999;
+      animation: fadeInUp .35s cubic-bezier(.4,0,.2,1);
+      border: 1.5px solid #e0e7ef;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .chat-header {
+      background: linear-gradient(90deg, #2563eb 60%, #38bdf8 100%);
+      color: #fff;
+      padding: 20px 0 18px 0;
+      font-weight: bold;
+      text-align: center;
+      font-size: 20px;
+      letter-spacing: 0.5px;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+    }
+    #chatbox {
+      flex: 1;
+      padding: 18px 18px 10px 18px;
+      overflow-y: auto;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 16px;
+    }
+    .input-area {
+      display: flex;
+      border-top: 1px solid #e5e7eb;
+      background: #f1f5f9;
+      padding: 10px 10px 10px 16px;
+      align-items: center;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 13px 16px;
+      border: 1.5px solid #e0e7ef;
+      outline: none;
+      background: #fff;
+      font-size: 16px;
+      color: #1e293b;
+      border-radius: 8px;
+      margin-right: 10px;
+      transition: border .2s;
+    }
+    .input-area input:focus {
+      border: 1.5px solid #2563eb;
+    }
+    .input-area button {
+      background: linear-gradient(90deg, #2563eb 60%, #38bdf8 100%);
+      color: #fff;
+      border: none;
+      padding: 11px 28px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: background .2s;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+    }
+    .input-area button:hover {
+      background: linear-gradient(90deg, #1d4ed8 60%, #0ea5e9 100%);
+    }
+    .message {
+      max-width: 85%;
+      padding: 13px 18px;
+      border-radius: 18px;
+      font-size: 16px;
+      line-height: 1.6;
+      box-shadow: 0 1px 4px rgba(30,41,59,0.08);
+      word-break: break-word;
+    }
+    .user-msg {
+      background: linear-gradient(90deg, #2563eb 60%, #38bdf8 100%);
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 6px;
+      border-bottom-left-radius: 18px;
+    }
+    .bot-msg {
+      background: #e0e7ef;
+      color: #1e293b;
+      align-self: flex-start;
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 18px;
+    }
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .sidebar { display: none; }
+      body { display: block; }
+      .main { padding: 18px; }
+      .chat-container, .chat-icon { right: 10px; }
+    }
+    @media (max-width: 700px) {
+      .chat-container {
+        width: 98vw;
+        left: 1vw;
+        right: 1vw;
+        min-width: unset;
+        height: 80vh;
+        max-height: 90vh;
+      }
+    }
+    @media (max-width: 600px) {
+      .chat-container {
+        width: 98vw;
+        left: 1vw;
+        right: 1vw;
+        min-width: unset;
+      }
+    }
+    @media (max-width: 500px) {
+      .main { padding: 4px; }
+      .chat-container { width: 98vw; left: 1vw; right: 1vw; bottom: 70px; }
+    }
+
+    /* Table scroll */
+    .table-scroll {
+      max-height: 350px;
+      overflow-y: auto;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(30,41,59,0.06);
+      transition: max-height 0.3s cubic-bezier(.4,0,.2,1);
+      position: relative;
+      cursor: pointer;
+    }
+    .table-scroll.expanded {
+      max-height: 1200px;
+      box-shadow: 0 4px 16px rgba(30,41,59,0.10);
+      z-index: 20;
+    }
+    .table-scroll::after {
+      content: 'Cliquez pour agrandir';
+      display: block;
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(0deg, #f8fafc 80%, transparent 100%);
+      color: #2563eb;
+      text-align: center;
+      font-size: 14px;
+      padding: 10px 0 6px 0;
+      opacity: 0.85;
+      pointer-events: none;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      transition: opacity 0.2s;
+    }
+    .table-scroll.expanded::after {
+      content: 'Cliquez pour réduire';
+      background: none;
+      color: #64748b;
+      opacity: 0.7;
+    }
+
+    .transfer-card {
+      max-width: 430px;
+      margin: 38px auto 0 auto;
+      box-shadow: 0 6px 32px rgba(37,99,235,0.13);
+      border-radius: 18px;
+      padding: 38px 36px 32px 36px;
+      background: linear-gradient(120deg, #f7fafc 80%, #e0e7ef 100%);
+      position: relative;
+    }
+    .transfer-summary {
+      display: flex;
+      align-items: center;
+      margin-bottom: 22px;
+      background: #e0e7ef;
+      border-radius: 12px;
+      padding: 14px 18px;
+      box-shadow: 0 2px 8px rgba(30,41,59,0.06);
+    }
+    .sender-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .sender-avatar img {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      border: 2.5px solid #2563eb;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+    }
+    .sender-name {
+      font-weight: 600;
+      font-size: 1.1em;
+      color: #1e293b;
+    }
+    .sender-balance {
+      color: #2563eb;
+      font-size: 1em;
+      margin-top: 2px;
+    }
+    .transfer-form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 10px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .form-group label {
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 1em;
+    }
+    .form-group .icon-user::before {
+      content: '\1F464';
+      font-size: 1.1em;
+      margin-left: 3px;
+    }
+    .form-group .icon-euro::before {
+      content: '\20AC';
+      font-size: 1.1em;
+      margin-left: 3px;
+    }
+    .form-group input {
+      padding: 13px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 7px;
+      font-size: 1.08em;
+      background: #f8fafc;
+      color: #1e293b;
+      transition: border .2s, box-shadow .2s;
+      outline: none;
+    }
+    .form-group input:focus {
+      border: 1.5px solid #2563eb;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+    }
+    .btn-transfer {
+      background: linear-gradient(90deg, #2563eb 60%, #38bdf8 100%);
+      color: #fff;
+      border: none;
+      padding: 15px 0;
+      border-radius: 8px;
+      font-size: 1.15em;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+      transition: background .2s, box-shadow .2s;
+    }
+    .btn-transfer:hover {
+      background: linear-gradient(90deg, #1d4ed8 60%, #0ea5e9 100%);
+      box-shadow: 0 4px 16px rgba(37,99,235,0.13);
+    }
+    .transfer-result {
+      margin-top: 18px;
+      font-weight: 600;
+      font-size: 1.08em;
+      min-height: 24px;
+      text-align: center;
+    }
+    @media (max-width: 600px) {
+      .transfer-card {
+        max-width: 98vw;
+        padding: 18px 6vw 18px 6vw;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="profile">
+      <img src="{{ user.profile_img }}" alt="Photo de profil">
+      <h3>{{ user.name }}</h3>
+      <div class="balance">💰 {{ '{:,.2f}'.format(user.balance).replace(',', ' ').replace('.', ',') }} €</div>
+    </div>
+    <nav>
+      <a href="#" onclick="showSection('accueil')">🏠 Accueil</a>
+      <a href="#" onclick="showSection('transactions')">💳 Transactions</a>
+      <a href="#" onclick="showSection('virements')">💸 Virements</a>
+      <a href="#" onclick="showSection('releves')">📄 Relevés</a>
+      <a href="#" onclick="showSection('parametres')">⚙️ Paramètres</a>
+      <a href="#" onclick="showSection('deconnexion')">🚪 Déconnexion</a>
+    </nav>
+  </div>
+
+  <!-- CONTENU PRINCIPAL -->
+  <div class="main">
+    <section id="accueilSection" class="main-section">
+      <header>
+        <h1>Bienvenue dans votre espace bancaire</h1>
+        <p>🔍 Visualisez vos opérations, virements, et plus encore.</p>
+      </header>
+
+      <!-- GRAPH -->
+      <div class="card">
+        <h3 style="display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; margin-bottom: 10px;">
+          <span style="font-size: 22px;">🔍</span> Visualisez vos opérations, virements, et plus encore.
+        </h3>
+        <div style="color: #64748b; font-size: 15px; margin-bottom: 10px;">Évolution du solde, crédit et débit</div>
+        <div class="chart-container">
+          <canvas id="soldeChart"></canvas>
+        </div>
+      </div>
+
+      <!-- HISTORIQUE -->
+      <div class="card">
+        <h3>Historique de vos opérations</h3>
+        <form id="filterForm" class="filters">
+          <label for="startDate">Date de début :</label>
+          <input type="date" id="startDate" name="startDate">
+          <label for="endDate">Date de fin :</label>
+          <input type="date" id="endDate" name="endDate">
+          <label for="typeFilter">Type :</label>
+          <select id="typeFilter" name="typeFilter">
+            <option value="Tous">Tous</option>
+            <option value="Debit">Débit</option>
+            <option value="Credit">Crédit</option>
+          </select>
+          <button type="submit">Appliquer</button>
+        </form>
+        <div class="table-scroll" id="tableScroll">
+          <table class="styled-table" id="operationsTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Debit €</th>
+                <th>Credit €</th>
+                <th>Balance €</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for op in operations %}
+              <tr>
+                <td>{{ op.date }}</td>
+                <td>{{ op.day }}</td>
+                <td>{{ op.type }}</td>
+                <td>{{ op.category }}</td>
+                <td>{{ '%.2f'|format(op.debit) }}</td>
+                <td>{{ '%.2f'|format(op.credit) }}</td>
+                <td>{{ '%.2f'|format(op.balance) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <footer style="text-align:center; color:#888; margin-top:40px;">
+        &copy; 2025 Banque Virtuelle. Tous droits réservés.
+      </footer>
+    </section>
+    <section id="transactionsSection" class="main-section" style="display:none">
+      <div class="card"><h2>Transactions</h2><p>Liste de vos transactions à venir ici...</p></div>
+    </section>
+    <section id="virementsSection" class="main-section" style="display:none">
+      <div class="card transfer-card">
+        <h2 style="font-size: 1.6rem; font-weight: 700; color: #1e293b; margin-bottom: 18px; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.7em; color: #2563eb;">💸</span> Virement bancaire sécurisé
+        </h2>
+        <div class="transfer-summary">
+          <div class="sender-info">
+            <div class="sender-avatar">
+              <img src="{{ user.profile_img }}" alt="Profil" />
+            </div>
+            <div>
+              <div class="sender-name">{{ user.name }}</div>
+              <div class="sender-balance">Solde : <span id="senderBalance">{{ '{:,.2f}'.format(user.balance).replace(',', ' ').replace('.', ',') }}</span> €</div>
+            </div>
+          </div>
+        </div>
+        <form id="transferForm" class="transfer-form">
+          <div class="form-group">
+            <label for="fromUser"><span>Expéditeur</span><i class="icon-user"></i></label>
+            <input type="text" id="fromUser" name="fromUser" value="{{ user.name }}" readonly>
+          </div>
+          <div class="form-group">
+            <label for="toUser"><span>Bénéficiaire</span><i class="icon-user"></i></label>
+            <input type="text" id="toUser" name="toUser" placeholder="Nom ou ID bénéficiaire" required autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label for="amount"><span>Montant</span><i class="icon-euro"></i></label>
+            <input type="number" id="amount" name="amount" min="1" step="0.01" placeholder="0,00 €" required autocomplete="off">
+          </div>
+          <button type="submit" class="btn-transfer">Transférer</button>
+        </form>
+        <div id="transferResult" class="transfer-result"></div>
+      </div>
+    </section>
+    <section id="relevesSection" class="main-section" style="display:none">
+      <div class="card"><h2>Relevés</h2><p>Vos relevés bancaires à venir ici...</p></div>
+    </section>
+    <section id="parametresSection" class="main-section" style="display:none">
+      <div class="card"><h2>Paramètres</h2><p>Paramètres du compte à venir ici...</p></div>
+    </section>
+    <section id="deconnexionSection" class="main-section" style="display:none">
+      <div class="card"><h2>Déconnexion</h2><p>Merci de votre visite. À bientôt !</p></div>
+    </section>
+  </div>
+
+  <!-- CHATBOT -->
+  <div class="chat-icon" onclick="toggleChat()">💬</div>
+  <div class="chat-container" id="chatWindow">
+    <div class="chat-header">Chat avec BankBot</div>
+    <div id="chatbox"></div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Votre message...">
+      <button onclick="sendMessage()">Envoyer</button>
+    </div>
+  </div>
+
+  <script>
+    // Données envoyées par Flask
+    const chartData = {{ chart_data|tojson|safe }};
+
+    // Initialisation Chart.js
+    const ctx = document.getElementById('soldeChart').getContext('2d');
+    const soldeChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chartData.labels,
+        datasets: chartData.datasets.map(ds => ({
+          label: ds.label,
+          data: ds.label === 'Débit'
+            ? ds.data.map(v => -Math.abs(v))
+            : ds.data,
+          borderColor: ds.label === 'Solde'  ? '#2196f3'
+                     : ds.label === 'Crédit' ? '#00bfae'
+                                               : '#e57373',
+          fill: ds.label === 'Solde',
+          tension: 0.2,
+          pointRadius: 2,
+          borderWidth: 2
+        }))
+      },
+      options: {
+        responsive: true,
+        plugins: { tooltip: { mode: 'index', intersect: false } },
+        scales: {
+          x: { title: { display: true, text: 'Date' } },
+          y: { title: { display: true, text: 'Montant (€)' } }
+        }
+      }
+    });
+
+    // Filtre dynamique
+    document.getElementById('filterForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const start = document.getElementById('startDate').value;
+      const end   = document.getElementById('endDate').value;
+      const type  = document.getElementById('typeFilter').value;
+      const res = await fetch('/filter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ start, end, type })
+      });
+      const { operations } = await res.json();
+
+      // Mise à jour du tableau
+      const tbody = document.querySelector('#operationsTable tbody');
+      tbody.innerHTML = '';
+      operations.forEach(op => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${op.date}</td>
+            <td>${op.day}</td>
+            <td>${op.type}</td>
+            <td>${op.category}</td>
+            <td>${Number(op.debit).toFixed(2)}</td>
+            <td>${Number(op.credit).toFixed(2)}</td>
+            <td>${Number(op.balance).toFixed(2)}</td>
+          </tr>`;
+      });
+
+      // Mise à jour du graphe
+      soldeChart.data.labels = operations.map(o => o.date);
+      soldeChart.data.datasets[0].data = operations.map(o => o.balance);
+      soldeChart.data.datasets[1].data = operations.map(o => o.credit);
+      soldeChart.data.datasets[2].data = operations.map(o => -Math.abs(o.debit));
+      soldeChart.update();
+    });
+
+    // Ajout: Réinitialiser le filtre
+    document.getElementById('filterForm').insertAdjacentHTML('beforeend', '<button type="button" id="resetBtn" style="background:#e0e7ef;color:#2563eb;margin-left:8px;">Réinitialiser</button>');
+    document.getElementById('resetBtn').onclick = () => { window.location.reload(); };
+
+    // Ajout: Entrée clavier pour le chat
+    document.getElementById('userInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // Ajout: Scroll auto sur le chat à l'ouverture
+    function toggleChat() {
+      const win = document.getElementById('chatWindow');
+      win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+      if(win.style.display === 'flex') {
+        setTimeout(() => {
+          const box = document.getElementById('chatbox');
+          box.scrollTop = box.scrollHeight;
+        }, 100);
+      }
+    }
+    // Envoi de message
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const text  = input.value.trim();
+      if (!text) return;
+      appendMessage('user-msg', text);
+      input.value = '';
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        appendMessage('bot-msg', data.response);
+      } catch {
+        appendMessage('bot-msg', "Erreur serveur.");
+      }
+    }
+    function appendMessage(cls, msg) {
+      const box = document.getElementById('chatbox');
+      const el  = document.createElement('div');
+      el.className = `message ${cls}`;
+      el.textContent = msg;
+      box.appendChild(el);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // Table scroll/expand
+    const tableScroll = document.getElementById('tableScroll');
+    tableScroll.addEventListener('click', function(e) {
+      // Ne pas agrandir si on clique sur une cellule ou un lien
+      if (e.target.tagName === 'TD' || e.target.tagName === 'TH' || e.target.tagName === 'A') return;
+      this.classList.toggle('expanded');
+    });
+
+    // Navigation sidebar
+    function showSection(section) {
+      const sections = ['accueil','transactions','virements','releves','parametres','deconnexion'];
+      sections.forEach(s => {
+        document.getElementById(s+'Section').style.display = (s === section) ? '' : 'none';
+      });
+    }
+
+    // Virement AJAX
+    document.getElementById('transferForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const fromUser = document.getElementById('fromUser').value.trim();
+      const toUser = document.getElementById('toUser').value.trim();
+      const amount = parseFloat(document.getElementById('amount').value);
+      const resultDiv = document.getElementById('transferResult');
+      resultDiv.textContent = 'Traitement en cours...';
+      try {
+        const res = await fetch('/transfer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fromUser, toUser, amount })
+        });
+        const data = await res.json();
+        if (data.success) {
+          resultDiv.style.color = '#2196f3';
+          resultDiv.innerHTML = '<span style="color:#22c55e;font-size:1.1em;font-weight:700;">&#x2705; Transfert réussi. Nouveau solde : ' + data.new_balance.toLocaleString('fr-FR') + ' €</span>';
+          // Mise à jour du solde dans la sidebar
+          const balanceDiv = document.querySelector('.sidebar .balance');
+          if (balanceDiv) {
+            balanceDiv.textContent = '💰 ' + data.new_balance.toLocaleString('fr-FR') + ' €';
+          }
+          // Mise à jour du solde dans la carte virement
+          const senderBalance = document.getElementById('senderBalance');
+          if (senderBalance) {
+            senderBalance.textContent = data.new_balance.toLocaleString('fr-FR');
+          }
+          // Redirection vers l'accueil après 2s
+          setTimeout(() => {
+            showSection('accueil');
+            resultDiv.textContent = '';
+          }, 2000);
+        } else {
+          resultDiv.style.color = '#e53935';
+          resultDiv.textContent = '❌ ' + (data.error || 'Erreur lors du transfert.');
+        }
+      } catch (err) {
+        resultDiv.style.color = '#e53935';
+        resultDiv.textContent = '❌ Erreur serveur.';
+      }
+    });
+  </script>
+</body>
+</html>
