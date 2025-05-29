@@ -485,19 +485,96 @@
       }
     }
 
-    /* Avis */
+    /* --- AVIS (FEEDBACK) SECTION IMPROVED --- */
+    #avisSection .card {
+      max-width: 430px;
+      margin: 38px auto 0 auto;
+      box-shadow: 0 6px 32px rgba(37,99,235,0.13);
+      border-radius: 18px;
+      padding: 38px 36px 32px 36px;
+      background: linear-gradient(120deg, #f7fafc 80%, #e0e7ef 100%);
+      position: relative;
+    }
+    #feedbackForm {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 10px;
+    }
+    #feedbackForm label {
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 6px;
+      font-size: 1em;
+    }
     #stars {
       display: flex;
       gap: 4px;
       cursor: pointer;
+      margin-bottom: 8px;
     }
     .star {
-      font-size: 1.5rem;
-      color: #e0e7ef; /* light/empty by default */
-      transition: transform 0.2s;
+      font-size: 1.7rem;
+      color: #e0e7ef;
+      transition: transform 0.2s, color 0.2s;
+      user-select: none;
     }
     .star.selected {
-      color: #ffd700; /* gold for selected */
+      color: #ffd700;
+      transform: scale(1.15);
+      text-shadow: 0 2px 8px #ffe06655;
+    }
+    #feedbackText {
+      width: 100%;
+      min-height: 90px;
+      max-height: 180px;
+      resize: vertical;
+      padding: 13px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 7px;
+      font-size: 1.08em;
+      background: #f8fafc;
+      color: #1e293b;
+      transition: border .2s, box-shadow .2s;
+      outline: none;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      box-sizing: border-box;
+    }
+    #feedbackText:focus {
+      border: 1.5px solid #2563eb;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+      background: #fff;
+    }
+    #feedbackForm button[type="submit"] {
+      background: linear-gradient(90deg, #2563eb 60%, #38bdf8 100%);
+      color: #fff;
+      border: none;
+      padding: 13px 0;
+      border-radius: 8px;
+      font-size: 1.08em;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.10);
+      transition: background .2s, box-shadow .2s;
+      letter-spacing: 0.5px;
+    }
+    #feedbackForm button[type="submit"]:hover {
+      background: linear-gradient(90deg, #1d4ed8 60%, #0ea5e9 100%);
+      box-shadow: 0 4px 16px rgba(37,99,235,0.13);
+    }
+    #feedbackResult {
+      margin-top: 10px;
+      font-weight: 600;
+      font-size: 1.08em;
+      min-height: 24px;
+      text-align: center;
+    }
+    @media (max-width: 600px) {
+      #avisSection .card {
+        max-width: 98vw;
+        padding: 18px 6vw 18px 6vw;
+      }
     }
 
   </style>
