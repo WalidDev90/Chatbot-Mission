@@ -305,14 +305,25 @@ def transfer():
 @app.route('/feedback', methods=['POST'])
 def feedback():
     data = request.get_json()
-    comment = data.get('comment', '')
-    rating = data.get('rating', 0)
-    # Analyse du sentiment
-    try:
-        result = sentiment_pipeline(comment[:512])[0]  # Limite à 512 tokens
-        sentiment_label = result['label']  # 'positive', 'neutral', 'negative'
-    except Exception as e:
-        sentiment_label = 'unknown'
+    comment = data.get('comment', '').strip()
+    rating = int(data.get('rating', 0))
+    # Si le commentaire est vide, on classe selon la note
+    if not comment:
+        if rating in [1, 2]:
+            sentiment_label = 'negative'
+        elif rating == 3:
+            sentiment_label = 'neutral'
+        elif rating in [4, 5]:
+            sentiment_label = 'positive'
+        else:
+            sentiment_label = 'unknown'
+    else:
+        # Analyse du sentiment normale
+        try:
+            result = sentiment_pipeline(comment[:512])[0]
+            sentiment_label = result['label']
+        except Exception as e:
+            sentiment_label = 'unknown'
     # Sauvegarde dans le CSV (rating, comment, sentiment)
     with open('feedback.csv', 'a', encoding='utf-8') as f:
         f.write(f"{rating},{comment.replace(',', ' ')},{sentiment_label}\n")
