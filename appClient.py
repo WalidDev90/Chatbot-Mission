@@ -17,6 +17,7 @@ from datetime import datetime
 import io
 import contextlib
 import csv
+from transformers import pipeline
 
 # Configure Gemini (via Google Generative AI)
 genai.configure(api_key="AIzaSyAjIBfty23aEyZ7rLfxa171JrejzLL1uGc")  # Remplace par ta clé API Google
@@ -54,6 +55,9 @@ app.secret_key = 'supersecretkey'
 model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 faq_queries = faq_df['Query'].tolist()
 faq_embeddings = model.encode(faq_queries, convert_to_tensor=True)
+
+# Charger le pipeline une seule fois
+sentiment_pipeline = pipeline("sentiment-analysis", model="cardiffnlp/twitter-xlm-roberta-base-sentiment")
 
 # === OUTILS PERSONNALISÉS ===
 def detect_langue(question):
@@ -301,26 +305,39 @@ def transfer():
 @app.route('/feedback', methods=['POST'])
 def feedback():
     data = request.get_json()
-    rating = data.get('rating')
-    comment = data.get('comment', '').strip()
-    user = session.get('client_id', 'anonyme')  # Or use user name/email if available
-
-    if not rating or not comment:
-        return jsonify({'success': False, 'error': 'Merci de donner une note et un avis.'})
-
-    feedback_file = 'feedback.csv'
-    feedback_path = os.path.join(os.path.dirname(__file__), feedback_file)
-    file_exists = os.path.isfile(feedback_path)
-
+    comment = data.get('comment', '')
+    rating = data.get('rating', 0)
+    # Analyse du sentiment
     try:
-        with open(feedback_path, 'a', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
-            if not file_exists:
-                writer.writerow(['timestamp', 'user', 'rating', 'comment'])
-            writer.writerow([datetime.now().isoformat(), user, rating, comment])
-        return jsonify({'success': True})
+        result = sentiment_pipeline(comment[:512])[0]  # Limite à 512 tokens
+        sentiment_label = result['label']  # 'positive', 'neutral', 'negative'
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+        sentiment_label = 'unknown'
+    # Sauvegarde dans le CSV (rating, comment, sentiment)
+    with open('feedback.csv', 'a', encoding='utf-8') as f:
+        f.write(f"{rating},{comment.replace(',', ' ')},{sentiment_label}\n")
+    return jsonify(success=True, sentiment=sentiment_label)
+
+@app.route('/sentiment_stats')
+def sentiment_stats():
+    # Lire le CSV et compter les sentiments
+    import csv
+    pos, neg, neu = 0, 0, 0
+    try:
+        with open('feedback.csv', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) >= 3:
+                    sentiment = row[2].strip().lower()
+                    if sentiment == 'positive':
+                        pos += 1
+                    elif sentiment == 'negative':
+                        neg += 1
+                    elif sentiment == 'neutral':
+                        neu += 1
+    except FileNotFoundError:
+        pass
+    return jsonify({'positive': pos, 'negative': neg, 'neutral': neu})
 
 
 if __name__ == '__main__':

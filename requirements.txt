@@ -3,7 +3,6 @@ googletrans==4.0.0-rc1
 torch==2.6.0
 
 # LangChain
-# LangChain
 langchain==0.1.16
 langchain-community>=0.0.30
 langchain-experimental>=0.0.20
@@ -20,5 +19,9 @@ pandas
 sentence-transformers==2.6.1
 transformers==4.37.0
 huggingface-hub==0.20.3
+
+# Sentiment analysis (multilingual, emoji/dialect support)
+emoji
+sentencepiece
 
 

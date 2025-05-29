@@ -13,3 +13,64 @@ timestamp,user,rating,comment
 2025-05-29T01:45:05.473679,anonyme,4,bon !!
 2025-05-29T02:06:36.833910,anonyme,5,555
 2025-05-29T02:07:58.722883,anonyme,5,excellenttttt
+5,excellent!,positive
+1,bad !,negative
+1,gdggef,neutral
+1,bad,negative
+1,eaneabvga,neutral
+5,,negative
+1,خايبة,negative
+5,باهية,negative
+4,:),positive
+4,merci,positive
+1,باهية,negative
+1,bien,positive
+1,:),positive
+1,:(,negative
+1,:),positive
+1,باهية,negative
+1,باهية,negative
+5,جيد,positive
+1,سيئ,negative
+3,متوسط,neutral
+1,tres mal,negative
+5,bien,positive
+5,bien,positive
+1,trés mal 
+tres mal,negative
+1,tres mal,negative
+1,tres mal,negative
+1,trés mal,negative
+3,pas mal,positive
+3,médiocre,negative
+3,service moyen,neutral
+3,service moyen,neutral
+4,good,positive
+1,bad,negative
+3,not bad not good,negative
+3,didn't like it that much,negative
+3,mediocre,negative
+3,,negative
+5,,negative
+3,very average,negative
+3,very average,negative
+3,average,neutral
+3,average,neutral
+5,behya,neutral
+5,behya,neutral
+3,behya,neutral
+4,behya,neutral
+1,5ayba,neutral
+3,metwasta,neutral
+4,behya,neutral
+1,5ayba,neutral
+4,:),positive
+1,:(,negative
+3,:/,negative
+3,-_-,neutral
+5,,negative
+1,,negative
+3,,negative
+1,,negative
+3,,negative
+5,,negative

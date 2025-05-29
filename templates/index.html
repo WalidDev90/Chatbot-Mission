@@ -577,6 +577,19 @@
       }
     }
 
+    /* Diagramme des avis */
+    #sentimentCard {
+      margin-top: 24px;
+    }
+    #sentimentCard .chart-container {
+      height: 320px;
+      min-width: 260px;
+      margin-bottom: 0;
+    }
+    #sentimentChart {
+      height: 320px;
+    }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -734,6 +747,13 @@
         <div id="feedbackResult" style="margin-top:12px;"></div>
       </div>
     </section>
+    <!-- Diagramme des avis -->
+    <div class="card" id="sentimentCard">
+      <h3 style="margin-bottom:10px;">Avis des utilisateurs</h3>
+      <div class="chart-container" style="height:320px;">
+        <canvas id="sentimentChart"></canvas>
+      </div>
+    </div>
   </div>
 
   <!-- CHATBOT -->
@@ -972,6 +992,48 @@
         // Optional: remove this line if you don't want to auto-fill the textarea
         // document.getElementById('feedbackText').value = `Note: ${value} étoiles`;
       });
+    });
+  
+    
+    // Diagramme des avis (barres)
+    let sentimentChart;
+    async function updateSentimentChart() {
+      const res = await fetch('/sentiment_stats');
+      const stats = await res.json();
+      const data = {
+        labels: ['Positifs', 'Négatifs', 'Neutres'],
+        datasets: [{
+          label: 'Nombre d\'avis',
+          data: [stats.positive, stats.negative, stats.neutral],
+          backgroundColor: ['#22c55e', '#ef4444', '#fbbf24'],
+          borderRadius: 8,
+          barThickness: 48
+        }]
+      };
+      const ctx = document.getElementById('sentimentChart').getContext('2d');
+      if (sentimentChart) {
+        sentimentChart.data = data;
+        sentimentChart.update();
+      } else {
+        sentimentChart = new Chart(ctx, {
+          type: 'bar',
+          data,
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { title: { display: false } },
+              y: { beginAtZero: true, title: { display: false } }, 
+            }
+          }
+        });
+      }
+    }
+    updateSentimentChart();
+
+    // Mettre à jour le diagramme après chaque nouvel avis
+    document.getElementById('feedbackForm').addEventListener('submit', function() {
+      setTimeout(updateSentimentChart, 500);
     });
   </script>
 </body>
